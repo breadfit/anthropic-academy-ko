@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code in Action | Anthropic Academy</title>
+  <meta name="description" content="Claude Code를 개발 워크플로우에 통합하는 실전 가이드">
+
+  <!-- Skilljar base styles (lightweight subset) -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800" rel="stylesheet">
+
+  <style>
+/* ================================================================
+   Anthropic brand fonts — assets.claude.ai
+================================================================ */
+@font-face {
+  font-family: "Styrene A";
+  src: url("https://assets.claude.ai/Fonts/AnthropicSans-Display-Medium-Static.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+  font-feature-settings: "pnum" on, "lnum" on, "liga" on;
+}
+@font-face {
+  font-family: "Styrene B";
+  src: url("https://assets.claude.ai/Fonts/AnthropicSans-Text-Medium-Static.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+@font-face {
+  font-family: "Styrene B";
+  src: url("https://assets.claude.ai/Fonts/AnthropicSans-Text-Regular-Static.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+@font-face {
+  font-family: "Copernicus";
+  src: url("https://assets.claude.ai/Fonts/AnthropicSerif-Display-Regular-Static.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+@font-face {
+  font-family: "Copernicus";
+  src: url("https://assets.claude.ai/Fonts/AnthropicSerif-Display-Semibold-Static.otf") format("opentype");
+  font-weight: 600; font-style: normal; font-display: swap;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* ================================================================
+   Reset / base
+================================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Styrene B", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #faf9f6;
+  color: #2c2b25;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+/* ================================================================
+   Header — Skilljar theme
+================================================================ */
+#header {
+  background-color: #f0eee6;
+  border-bottom: 1px solid #e5e2d9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+#header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+.back-to-catalog {
+  color: #2c2b25;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+.back-to-catalog svg { width: 18px; height: 18px; }
+.header-logo-link { display: flex; align-items: center; text-decoration: none; }
+.header-logo-link img { height: 13px; width: auto; }
+#header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.header-link {
+  color: #141413;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-family: "Styrene B", sans-serif;
+}
+.login-link {
+  color: #141413;
+  text-decoration: none;
+  font-size: 0.9375rem;
+}
+
+/* ================================================================
+   CLP — Course Landing Page
+================================================================ */
+.clp__container {
+  font-family: "Styrene B", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #faf9f6;
+  color: #2c2b25;
+  flex: 1;
+}
+
+/* Hero */
+.clp__hero { padding: 4rem 2rem; background-color: #faf9f6; }
+.clp__hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+.clp__hero-text {}
+.clp__breadcrumb {
+  font-size: 0.875rem;
+  color: #7c7968;
+  letter-spacing: 0.3px;
+  margin-bottom: 1.5rem;
+}
+.clp__breadcrumb-link { color: #7c7968; text-decoration: none; }
+.clp__breadcrumb-link:hover { color: #2c2b25; }
+.clp__breadcrumb-separator { color: #9a9788; margin: 0 0.25rem; }
+.clp__title {
+  font-family: "Copernicus", Georgia, serif;
+  font-size: 3rem;
+  line-height: 1.15;
+  margin: 0 0 1.5rem 0;
+  color: #2c2b25;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.clp__subtitle {
+  font-size: 1.125rem;
+  color: #5e5b4e;
+  line-height: 1.6;
+  font-weight: 400;
+  margin: 0 0 2.5rem 0;
+}
+.clp__subtitle a { color: #1694D1; }
+.clp__hero-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.clp__enroll-btn {
+  background-color: #2c2b25;
+  color: #fff;
+  padding: 0.875rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: "Styrene B", sans-serif;
+  text-decoration: none;
+  line-height: 1;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.clp__enroll-btn:hover { background-color: #3d3c34; }
+.clp__free-tag {
+  display: inline-block;
+  background: rgba(44, 43, 37, 0.08);
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-left: 1rem;
+  color: #7c7968;
+  font-family: "Styrene B", sans-serif;
+}
+.clp__signin-text {
+  font-family: "Styrene B", sans-serif;
+  color: #7c7968;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+.clp__signin-link { color: #2c2b25; text-decoration: none; font-weight: 500; }
+.clp__signin-link:hover { text-decoration: underline; }
+.clp__share-buttons-inline {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.clp__share-btn-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.3);
+  color: #5e5b4e;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-family: "Styrene B", sans-serif;
+  transition: background 0.15s ease;
+}
+.clp__share-btn-inline:hover { background: rgba(255, 255, 255, 0.6); }
+.clp__share-icon-inline { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* Hero right — video + stats */
+.clp__hero-right { display: flex; flex-direction: column; }
+.clp__video-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: #E3DACC;
+}
+.clp__video-thumb {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: block;
+  object-fit: contain;
+  background: #E3DACC;
+}
+.clp__stats-container {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e2d9;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.clp__stat-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  font-family: "Styrene B", sans-serif;
+}
+.clp__stat-value { font-weight: 600; color: #2c2b25; font-size: 0.875rem; }
+.clp__stat-label { color: #7c7968; font-size: 0.8125rem; }
+
+/* Main content */
+.clp__main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem 0 2rem;
+}
+
+/* Course details */
+.clp__course-details {
+  background-color: #f0eee6;
+  border-radius: 8px;
+  padding: 3.5rem;
+  margin-bottom: 3rem;
+}
+.clp__details-title {
+  font-family: "Copernicus", Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #2c2b25;
+  margin: 0 0 2.5rem 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.clp__details-subtitle {
+  font-family: "Styrene A", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #2c2b25;
+  margin: 2.5rem 0 1rem 0;
+  letter-spacing: -0.02em;
+}
+.clp__details-text {
+  font-size: 1rem;
+  color: #5e5b4e;
+  line-height: 1.75;
+  margin: 0 0 0.75rem 0;
+}
+.clp__details-text a { color: #1694D1; }
+.clp__details-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0 0 0;
+}
+.clp__details-list li {
+  font-size: 1rem;
+  color: #5e5b4e;
+  line-height: 1.75;
+  margin-bottom: 0.5rem;
+}
+
+/* Curriculum */
+.clp__sections-container { margin-bottom: 3rem; }
+.clp__section-title {
+  font-family: "Copernicus", Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: #2c2b25;
+  margin: 3.5rem 0 2rem;
+  letter-spacing: -0.02em;
+}
+.clp__section-block {
+  background-color: #f0eee6;
+  border-radius: 8px;
+  padding: 2.5rem;
+  margin-bottom: 1rem;
+}
+.clp__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.clp__section-info {}
+.clp__section-name {
+  font-family: "Styrene B", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c2b25;
+  margin: 0 0 0.25rem 0;
+}
+.clp__lesson-count {
+  font-size: 0.9375rem;
+  color: #7c7968;
+  font-family: "Styrene B", sans-serif;
+}
+.clp__section-description {
+  font-size: 1rem;
+  color: #5e5b4e;
+  line-height: 1.75;
+  margin: 0 0 1.5rem 0;
+  font-family: "Styrene B", sans-serif;
+}
+.clp__preview-label {
+  font-size: 0.8125rem;
+  color: #7c7968;
+  font-family: "Styrene B", sans-serif;
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.clp__image-placeholders {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+.clp__screenshot-wrapper {
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  aspect-ratio: 16/9;
+  max-height: 188px;
+}
+.clp__screenshot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+.clp__screenshot-clickable:hover { transform: scale(1.02); }
+
+/* Modal / lightbox */
+.clp__modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+.clp__modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+.clp__modal-close {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  color: black;
+  line-height: 1;
+}
+.clp__modal-close:hover { background: white; }
+.clp__modal-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 80vh;
+  object-fit: contain;
+}
+.clp__modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 48px; height: 48px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+.clp__modal-nav:hover { background: rgba(255, 255, 255, 0.3); }
+.clp__modal-prev { left: 1rem; }
+.clp__modal-next { right: 1rem; }
+
+/* ================================================================
+   FAQ — Data and Privacy
+================================================================ */
+.b-faq-list {
+  padding-bottom: 96px;
+  padding-top: 48px;
+  background-color: #faf9f6;
+}
+.b-faq-list .page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 48px;
+  padding-right: 48px;
+}
+.block-content { margin-top: 48px; }
+.h3 {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.64px;
+  margin: 0 0 48px 0;
+  font-family: "Styrene A", -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #2c2b25;
+}
+.h4 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.48px;
+  margin: 0;
+  font-family: "Styrene A", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.text-b2 {
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 0;
+  font-family: "Styrene B", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.text-b2 p { font-size: 16px !important; line-height: 1.6; color: #5e5b4e; margin: 0; }
+.text-b2 a { color: #1694D1; }
+.faq-container {
+  border-top: 1px solid #b0aea5;
+  position: relative;
+  width: 100%;
+}
+.faq-container + .faq-container { margin-top: 0; }
+.faq-input {
+  cursor: pointer;
+  height: 100%;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 3;
+  margin: 0;
+}
+.faq-label {
+  display: flex;
+  padding: 20px 0;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+.faq-title {
+  flex: 1;
+  font-family: "Styrene B", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #2c2b25;
+  line-height: 1.3;
+}
+.faq-icon {
+  color: #141413;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+.icon-more { display: inline-block; width: 24px; height: 24px; }
+.icon-less { display: none; width: 24px; height: 24px; }
+.faq-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.faq-post { padding: 0 0 1.5rem 0; }
+.faq-input:checked ~ .faq-label .icon-more { display: none; }
+.faq-input:checked ~ .faq-label .icon-less { display: inline-block; }
+.faq-input:checked ~ .faq-content { max-height: 600px; }
+
+/* ================================================================
+   Anthropic Footer (dark)
+================================================================ */
+.ant-footer {
+  background-color: #141413;
+  color: #fff;
+}
+.ant-footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2rem 0 2rem;
+}
+.ant-footer__logo { padding-bottom: 1.5rem; }
+.ant-footer__logo a { display: inline-flex; align-items: center; text-decoration: none; }
+.ant-footer__divider { border-top: 1px solid #2c2b25; }
+.ant-footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0 1.5rem 0;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.ant-footer__copy { color: #7c7968; font-size: 0.8125rem; margin: 0; }
+.ant-footer__social { display: flex; align-items: center; gap: 1.25rem; }
+.ant-footer__social a { color: #7c7968; display: flex; text-decoration: none; }
+.ant-footer__social a:hover { color: #9a9788; }
+
+/* Skilljar powered-by footer */
+#ep-footer {
+  background-color: #faf9f6;
+  padding: 0.625rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #e5e2d9;
+}
+#ep-footer ul { list-style: none; margin: 0; padding: 0; }
+#ep-footer li { color: #7c7968; font-size: 0.8125rem; }
+#ep-footer .right a {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  text-decoration: none;
+}
+#ep-footer .right a span { color: #9a9788; font-size: 0.75rem; }
+#ep-footer .right img { height: 14px; width: auto; opacity: 0.6; }
+
+/* ================================================================
+   Responsive
+================================================================ */
+@media (max-width: 968px) {
+  .clp__hero-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}
+@media (max-width: 768px) {
+  .clp__image-placeholders { grid-template-columns: 1fr; }
+  .b-faq-list .page-wrapper { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .ant-footer__inner { padding: 1.5rem 1.5rem 0 1.5rem; }
+  #header { padding: 0 1rem; }
+  #header-right .header-link:not(.login-link) { display: none; }
+}
+@media (max-width: 640px) {
+  .clp__hero { padding: 2rem 1rem; }
+  .clp__title { font-size: 2rem; margin-bottom: 1rem; }
+  .clp__subtitle { font-size: 1rem; margin-bottom: 1.5rem; }
+  .clp__main-content { padding: 2rem 1rem 0 1rem; }
+  .clp__course-details { padding: 2rem 1.5rem; }
+  .clp__section-block { padding: 1.5rem; }
+  .clp__share-buttons-inline { flex-direction: column; align-items: flex-start; }
+}
+  </style>
+</head>
+
+<body>
+
+<!-- ================================================================
+     Header
+================================================================ -->
+<header id="header">
+  <div id="header-left">
+    <a href="https://anthropic.skilljar.com/" class="back-to-catalog" title="Anthropic 강좌 목록으로" aria-label="강좌 목록으로 돌아가기">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </a>
+    <a href="https://www.anthropic.com" class="header-logo-link">
+      <img src="https://cc.sj-cdn.net/instructor/4hdejjwplbrm-anthropic/themes/3gufixqhei80k/header-logo.1749494808.png" alt="ANTHROPIC">
+    </a>
+  </div>
+  <div id="header-right">
+    <a href="https://www.anthropic.com/learn" class="header-link">Anthropic Academy</a>
+    <a href="https://anthropic.skilljar.com/" class="header-link">강좌 목록</a>
+    <a href="https://anthropic.skilljar.com/auth/login?next=%2Fclaude-code-in-action" class="header-link login-link">로그인</a>
+  </div>
+</header>
+
+<!-- ================================================================
+     CLP Container
+================================================================ -->
+<div class="clp__container">
+
+  <!-- Hero -->
+  <section class="clp__hero">
+    <div class="clp__hero-content">
+
+      <!-- Left: text -->
+      <div class="clp__hero-text">
+        <div class="clp__breadcrumb">
+          <a href="https://www.anthropic.com/learn" class="clp__breadcrumb-link">Anthropic Academy</a>
+          <span class="clp__breadcrumb-separator"> / </span>
+          <a href="https://anthropic.skilljar.com/" class="clp__breadcrumb-link">강좌 목록</a>
+        </div>
+
+        <h1 class="clp__title">Claude Code in Action</h1>
+
+        <p class="clp__subtitle">
+          <a href="https://claude.com/product/claude-code">Claude Code</a>를 개발 워크플로우에 통합하는 실전 가이드
+        </p>
+
+        <div class="clp__hero-actions">
+          <a href="https://anthropic.skilljar.com/checkout/2lhme7jpf2r85" class="clp__enroll-btn" target="_blank" rel="noopener noreferrer">수강 신청</a>
+          <span class="clp__free-tag">무료</span>
+        </div>
+
+        <div class="clp__signin-text">
+          이미 등록하셨나요?&nbsp;
+          <a href="https://anthropic.skilljar.com/auth/login?next=%2Fclaude-code-in-action" class="clp__signin-link">로그인</a>
+        </div>
+
+        <div class="clp__share-buttons-inline">
+          <a href="https://x.com/intent/tweet?url=https://anthropic.skilljar.com/claude-code-in-action" class="clp__share-btn-inline" target="_blank" rel="noopener noreferrer">
+            <svg class="clp__share-icon-inline" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            <span>X에 공유</span>
+          </a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://anthropic.skilljar.com/claude-code-in-action" class="clp__share-btn-inline" target="_blank" rel="noopener noreferrer">
+            <svg class="clp__share-icon-inline" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            <span>LinkedIn에 공유</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: video thumbnail + stats -->
+      <div class="clp__hero-right">
+        <div class="clp__video-wrapper">
+          <img
+            src="https://cc.sj-cdn.net/instructor/4hdejjwplbrm-anthropic/courses/3n2veylcj0hl/promo-image.1750989653.svg"
+            alt="Claude Code in Action 강좌 미리보기"
+            class="clp__video-thumb"
+          >
+        </div>
+
+        <div class="clp__stats-container">
+          <div class="clp__stat-item">
+            <span class="clp__stat-value">15</span>
+            <span class="clp__stat-label">강의</span>
+          </div>
+          <div class="clp__stat-item">
+            <span class="clp__stat-value">1</span>
+            <span class="clp__stat-label">시간 분량</span>
+          </div>
+          <div class="clp__stat-item">
+            <span class="clp__stat-value">1</span>
+            <span class="clp__stat-label">퀴즈</span>
+          </div>
+          <div class="clp__stat-item">
+            <span class="clp__stat-value">✓</span>
+            <span class="clp__stat-label">수료증 발급</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Main content -->
+  <div class="clp__main-content">
+
+    <!-- About this course -->
+    <div class="clp__course-details">
+      <h2 class="clp__details-title">이 과정에 대하여</h2>
+
+      <p class="clp__details-text">
+        이 과정은 언어 모델을 활용해 개발 작업을 수행하는 커맨드라인 AI 어시스턴트인
+        <a href="https://claude.com/product/claude-code">Claude Code</a>를 다룹니다.
+        Claude Code가 툴 시스템을 통해 파일을 읽고, 명령을 실행하고, 코드를 수정하는 방법과
+        함께 컨텍스트 관리, 커스텀 워크플로우 생성, 훅(hook)을 통한 Claude Code 확장,
+        외부 서비스와의 통합 기법을 배웁니다.
+      </p>
+
+      <h3 class="clp__details-subtitle">학습 목표</h3>
+      <p class="clp__details-text">이 과정을 마치면 다음을 할 수 있습니다:</p>
+      <ul class="clp__details-list">
+        <li>파일 조작, 명령 실행, 코드 분석을 위한 Claude Code의 핵심 툴 활용</li>
+        <li>/init, Claude.md 파일, @ 멘션을 사용한 효과적인 컨텍스트 관리</li>
+        <li>다양한 단축키와 명령어를 활용한 대화 흐름 제어</li>
+        <li>복잡한 작업을 위한 Plan Mode와 Thinking Mode 활성화</li>
+        <li>반복적인 개발 워크플로우 자동화를 위한 커스텀 명령어 생성</li>
+        <li>브라우저 자동화 등의 기능 추가를 위한 MCP 서버로 Claude Code 확장</li>
+        <li>자동화된 PR 리뷰 및 이슈 처리를 위한 GitHub 연동 설정</li>
+        <li>Claude Code에 추가 동작을 부여하는 훅(hook) 작성</li>
+      </ul>
+
+      <h3 class="clp__details-subtitle">사전 준비 사항</h3>
+      <ul class="clp__details-list">
+        <li>커맨드라인 인터페이스(CLI) 기본 사용 경험</li>
+        <li>Claude Code 접근 권한 및 API 키</li>
+      </ul>
+
+      <h3 class="clp__details-subtitle">대상 수강생</h3>
+      <p class="clp__details-text">AI 지원으로 개발 워크플로우를 가속화하고 싶은 엔지니어</p>
+    </div>
+
+    <!-- Curriculum -->
+    <section class="clp__sections-container">
+      <h2 class="clp__section-title">강좌 구성</h2>
+
+      <div class="clp__section-block">
+        <div class="clp__section-header">
+          <div class="clp__section-info">
+            <h3 class="clp__section-name">Claude Code in Action</h3>
+            <span class="clp__lesson-count">10개 강의</span>
+          </div>
+        </div>
+
+        <p class="clp__section-description">
+          Claude Code를 효과적으로 활용하는 완전 가이드입니다.
+          코딩 어시스턴트의 작동 원리 이해부터 설정, 컨텍스트 관리, 변경 적용,
+          MCP 서버·GitHub 연동·훅 구현 같은 고급 기능까지 단계별로 다룹니다.
+        </p>
+
+        <span class="clp__preview-label">강좌 미리보기</span>
+        <div class="clp__image-placeholders" id="screenshot-gallery" data-section-id="section-1">
+          <div class="clp__screenshot-wrapper">
+            <img
+              src="https://d7juhi4i8fsw0.cloudfront.net/images/claude-code-in-action/01-01-medium.webp"
+              alt="Claude Code 설정 및 초기화"
+              class="clp__screenshot-image clp__screenshot-clickable"
+              loading="lazy"
+              data-full-size-url="https://d7juhi4i8fsw0.cloudfront.net/images/claude-code-in-action/01-01.webp"
+              data-index="0"
+            >
+          </div>
+          <div class="clp__screenshot-wrapper">
+            <img
+              src="https://d7juhi4i8fsw0.cloudfront.net/images/claude-code-in-action/01-02-medium.webp"
+              alt="컨텍스트 관리와 파일 멘션"
+              class="clp__screenshot-image clp__screenshot-clickable"
+              loading="lazy"
+              data-full-size-url="https://d7juhi4i8fsw0.cloudfront.net/images/claude-code-in-action/01-02.webp"
+              data-index="1"
+            >
+          </div>
+          <div class="clp__screenshot-wrapper">
+            <img
+              src="https://d7juhi4i8fsw0.cloudfront.net/images/claude-code-in-action/01-03-medium.webp"
+              alt="MCP 서버와 GitHub 연동"
+              class="clp__screenshot-image clp__screenshot-clickable"
+              loading="lazy"
+              data-full-size-url="https://d7juhi4i8fsw0.cloudfront.net/images/claude-code-in-action/01-03.webp"
+              data-index="2"
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /clp__main-content -->
+
+</div><!-- /clp__container -->
+
+<!-- ================================================================
+     Image lightbox modal
+================================================================ -->
+<div id="clp-modal" style="display:none;" role="dialog" aria-modal="true" aria-label="이미지 확대보기">
+  <div class="clp__modal-overlay" id="modal-overlay">
+    <div class="clp__modal-content">
+      <button class="clp__modal-close" id="modal-close" aria-label="닫기">✕</button>
+      <button class="clp__modal-nav clp__modal-prev" id="modal-prev" aria-label="이전 이미지"><span>‹</span></button>
+      <button class="clp__modal-nav clp__modal-next" id="modal-next" aria-label="다음 이미지"><span>›</span></button>
+      <img class="clp__modal-image" id="modal-image" src="" alt="">
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FAQ — Data and Privacy
+================================================================ -->
+<div id="sj-custom-footer" role="contentinfo">
+  <div class="b-faq-list">
+    <div class="page-wrapper">
+      <h2 class="h3">데이터 및 개인정보 보호</h2>
+      <div class="block-content">
+        <div class="faqs-container">
+
+          <div id="faq-container-1" class="faq-container">
+            <input id="faq-1" class="faq-input" type="checkbox">
+            <label for="faq-1" class="faq-label">
+              <div class="faq-title h4">Skilljar란 무엇이며, 왜 여기서 로그인하나요?</div>
+              <span class="faq-icon">
+                <svg class="icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg class="icon-less" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+            </label>
+            <article class="faq-content">
+              <div class="faq-post text-b2">
+                <p>Skilljar는 교육 콘텐츠를 호스팅하는 학습 관리 시스템(LMS)입니다. Anthropic 강좌 자료에 접근하기 위해 이 플랫폼에 로그인합니다. 별도 플랫폼을 통해 인터랙티브한 학습 경험 제공, 학습 진도 추적, 모든 강좌 자료에 체계적으로 접근할 수 있도록 지원합니다.</p>
+              </div>
+            </article>
+          </div>
+
+          <div id="faq-container-2" class="faq-container">
+            <input id="faq-2" class="faq-input" type="checkbox">
+            <label for="faq-2" class="faq-label">
+              <div class="faq-title h4">Skilljar는 내 학습 활동에 관한 어떤 정보를 수집하나요?</div>
+              <span class="faq-icon">
+                <svg class="icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg class="icon-less" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+            </label>
+            <article class="faq-content">
+              <div class="faq-post text-b2">
+                <p>Skilljar는 강좌 진도, 강의 수강 여부, 퀴즈 점수, 학습 소요 시간 등 기본적인 학습 분석 데이터를 수집합니다. 이 데이터는 학습 진행 상황 파악과 수료증 발급에 활용되며, 모든 수집은 <a href="https://www.skilljar.com/privacy" target="_blank">Skilljar 개인정보 처리방침</a>을 따릅니다.</p>
+              </div>
+            </article>
+          </div>
+
+          <div id="faq-container-3" class="faq-container">
+            <input id="faq-3" class="faq-input" type="checkbox">
+            <label for="faq-3" class="faq-label">
+              <div class="faq-title h4">Skilljar 데이터와 Anthropic 계정 데이터는 어떻게 다른가요?</div>
+              <span class="faq-icon">
+                <svg class="icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg class="icon-less" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+            </label>
+            <article class="faq-content">
+              <div class="faq-post text-b2">
+                <p>Skilljar는 이 강좌 플랫폼 내의 학습 진도만 추적하며, Anthropic 계정은 Anthropic Console 및 Claude AI 서비스 접근을 관리합니다. 두 계정은 독립적으로 운영됩니다.</p>
+              </div>
+            </article>
+          </div>
+
+          <div id="faq-container-4" class="faq-container">
+            <input id="faq-4" class="faq-input" type="checkbox">
+            <label for="faq-4" class="faq-label">
+              <div class="faq-title h4">Skilljar는 안전한가요? 내 데이터는 어디에 저장되나요?</div>
+              <span class="faq-icon">
+                <svg class="icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg class="icon-less" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+            </label>
+            <article class="faq-content">
+              <div class="faq-post text-b2">
+                <p>Skilljar는 데이터 암호화, 안전한 호스팅, 정기 보안 감사 등 업계 표준 보안 조치를 적용합니다. SOC 2 인증을 받았으며, 적절한 접근 제어가 갖춰진 보안 서버에 학습 데이터를 저장합니다.</p>
+              </div>
+            </article>
+          </div>
+
+          <div id="faq-container-5" class="faq-container">
+            <input id="faq-5" class="faq-input" type="checkbox">
+            <label for="faq-5" class="faq-label">
+              <div class="faq-title h4">Skilljar 계정을 삭제하려면 어떻게 하나요?</div>
+              <span class="faq-icon">
+                <svg class="icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg class="icon-less" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+            </label>
+            <article class="faq-content">
+              <div class="faq-post text-b2">
+                <p>Skilljar 계정 삭제를 원하시면 <a href="https://anthropic.skilljar.com/auth/login" target="_blank">로그인</a> 후 계정 설정에서 직접 삭제하거나, Skilljar 지원팀에 삭제를 요청하실 수 있습니다.</p>
+              </div>
+            </article>
+          </div>
+
+          <div id="faq-container-6" class="faq-container">
+            <input id="faq-6" class="faq-input" type="checkbox">
+            <label for="faq-6" class="faq-label">
+              <div class="faq-title h4">강좌를 수강하려면 Anthropic 계정이 필요한가요?</div>
+              <span class="faq-icon">
+                <svg class="icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg class="icon-less" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+            </label>
+            <article class="faq-content">
+              <div class="faq-post text-b2">
+                <p>강좌 수강에 Anthropic 계정은 필요하지 않습니다. Skilljar 계정만으로 모든 강좌 콘텐츠에 접근할 수 있습니다. 단, Claude Code를 실제로 사용하려면 Anthropic API 키가 필요합니다.</p>
+              </div>
+            </article>
+          </div>
+
+        </div><!-- /faqs-container -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     Anthropic Footer (dark)
+================================================================ -->
+<footer class="ant-footer">
+  <div class="ant-footer__inner">
+    <div class="ant-footer__logo">
+      <a href="https://www.anthropic.com" aria-label="Anthropic">
+        <svg width="36" height="28" viewBox="0 0 56 40" fill="none">
+          <path d="M30.844 0H23.156L0 40H8.567L14.1 28.8H39.9L45.433 40H54L30.844 0ZM17.378 21.6L28 1.8L38.622 21.6H17.378Z" fill="white"/>
+        </svg>
+      </a>
+    </div>
+    <div class="ant-footer__divider"></div>
+    <div class="ant-footer__bottom">
+      <p class="ant-footer__copy">© 2025 Anthropic PBC</p>
+      <div class="ant-footer__social">
+        <a href="https://www.youtube.com/@anthropic-ai" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/>
+          </svg>
+        </a>
+        <a href="https://www.linkedin.com/company/anthropicresearch" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/>
+          </svg>
+        </a>
+        <a href="https://x.com/AnthropicAI" target="_blank" rel="noopener noreferrer" aria-label="X">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Skilljar powered-by footer -->
+<footer id="ep-footer">
+  <div class="left"><ul><li>© 2026</li></ul></div>
+  <div class="right">
+    <a href="https://www.skilljar.com" target="_blank" rel="noopener noreferrer">
+      <span>powered by</span>
+      <img src="https://anthropic.skilljar.com/static/skilljar-monorepo/statics/dist/img/powered-by-logo.864fb1f2d98e.png" alt="Skilljar">
+    </a>
+  </div>
+</footer>
+
+<!-- ================================================================
+     Lightbox JS (vanilla, ~40 lines)
+================================================================ -->
+<script>
+(function () {
+  const modal = document.getElementById('clp-modal');
+  const overlay = document.getElementById('modal-overlay');
+  const modalImg = document.getElementById('modal-image');
+  const closeBtn = document.getElementById('modal-close');
+  const prevBtn = document.getElementById('modal-prev');
+  const nextBtn = document.getElementById('modal-next');
+
+  const images = Array.from(document.querySelectorAll('.clp__screenshot-clickable'));
+  let currentIdx = 0;
+
+  function openModal(idx) {
+    currentIdx = idx;
+    const img = images[idx];
+    modalImg.src = img.dataset.fullSizeUrl || img.src;
+    modalImg.alt = img.alt;
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    prevBtn.style.display = images.length > 1 ? 'flex' : 'none';
+    nextBtn.style.display = images.length > 1 ? 'flex' : 'none';
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function navigate(dir) {
+    currentIdx = (currentIdx + dir + images.length) % images.length;
+    const img = images[currentIdx];
+    modalImg.src = img.dataset.fullSizeUrl || img.src;
+    modalImg.alt = img.alt;
+  }
+
+  images.forEach((img, i) => img.addEventListener('click', () => openModal(i)));
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  prevBtn.addEventListener('click', () => navigate(-1));
+  nextBtn.addEventListener('click', () => navigate(1));
+  document.addEventListener('keydown', (e) => {
+    if (modal.style.display === 'none') return;
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'ArrowLeft') navigate(-1);
+    if (e.key === 'ArrowRight') navigate(1);
+  });
+})();
+</script>
+
+</body>
+</html>
